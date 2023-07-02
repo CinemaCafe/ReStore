@@ -15,7 +15,7 @@ function App() {
 			}
 		}
 	});
-
+	// to switch theme
 	function handleThemeChange() {
 		setDarkMode(!darkMode);
 	}
