@@ -1,4 +1,5 @@
 using API.Data;
+using API.Middleware;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,11 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 // ordering is important in this area
+
+// add exception middle ware here, an exception handling middleware.
+app.UseMiddleware<ExceptionMiddleware>();
+
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

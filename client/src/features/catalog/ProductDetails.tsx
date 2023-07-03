@@ -1,8 +1,9 @@
 import { Divider, Grid, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from "@mui/material"
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom"
 import { Product } from "../../app/models/product";
+import agent from "../../app/api/agent";
+import NotFound from "../../app/errors/NotFound";
 
 const ProductDetails = () => {
     // react-router-dom Returns an object of key/value pairs of the dynamic params from the current URL that were matched by the route path.
@@ -12,15 +13,14 @@ const ProductDetails = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get(`http://localhost:5000/api/products/${id}`)
-            .then(response => setProducts(response.data))
+        id && agent.Catalog.detail(parseInt(id)).then(response => setProducts(response))
             .catch(err => console.log(err))
             .finally(() => setLoading(false));
     }, [id]);
 
     if (loading) return <h3>Loading...</h3>
 
-    if (!product) return <h3>Product not found</h3>
+    if (!product) return <NotFound />
 
     return (
         <Grid container spacing={6}>
