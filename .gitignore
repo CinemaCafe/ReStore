@@ -479,3 +479,4 @@ API/appsettings.json
 API/store.db-wal
 
 API/store.db-shm
+client/package-lock.json
