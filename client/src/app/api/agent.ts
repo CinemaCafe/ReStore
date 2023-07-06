@@ -5,6 +5,9 @@ import { router } from "../router/Routes";
 const sleep = () => new Promise(resolve => setTimeout(resolve, 500));
 
 axios.defaults.baseURL = "http://localhost:5000/api/";
+// With both sides (API & client) of this element in place, then our browser will recevie the cookie it will set the cookie inside our application storage as well.
+// so If I press the ADD TO CART button it will add cookie to the client side.
+axios.defaults.withCredentials = true;
 
 // arrow functions, they make it easier to keep our code concise.
 const responseBody = (response: AxiosResponse) => response.data;
@@ -73,9 +76,18 @@ const Catalog = {
     detail: (id: number) => requests.get(`products/${id}`)
 }
 
+const Basket = {
+    // the parameter is from cookie
+    // it will request parameter from cookie.
+    get: () => requests.get("basket"),
+    addItem: (productId: number, quantity = 1) => requests.post(`basket?productId=${productId}&quantity=${quantity}`, {}),
+    removeItem: (productId: number, quantity = 1) => requests.delete(`basket?productId=${productId}&quantity=${quantity}`)
+}
+
 const agent = {
     Catalog,
-    TestErrors
+    TestErrors,
+    Basket
 }
 
 export default agent;

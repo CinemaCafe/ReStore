@@ -15,33 +15,18 @@ namespace API.Controllers
             _context = context;
         }
 
-        [HttpGet]
+        [HttpGet(Name = "GetBasket")]
         public async Task<ActionResult<BasketDto>> GetBasket()
         {
             var basket = await RetrieveBasket();
 
             if (basket == null) return NotFound();
-
-            return new BasketDto
-            {
-                Id = basket.Id,
-                BuyerId = basket.BuyerId,
-                Items = basket.Items.Select(item => new BasketItemDto
-                {
-                    ProductId = item.ProductId,
-                    Name = item.Product.Name,
-                    Price = item.Product.Price,
-                    PictureUrl = item.Product.PictureUrl,
-                    Type = item.Product.Type,
-                    Brand = item.Product.Brand,
-                    Quantity = item.Quantity
-                }).ToList()
-            };
+            return MapBasketToDto(basket);
         }
 
 
         [HttpPost] // api/basket?productId&quantity=2
-        public async Task<ActionResult> AddItemToBasket(int productId, int quantity)
+        public async Task<ActionResult<BasketDto>> AddItemToBasket(int productId, int quantity)
         {
             // get basket || create basket
             var basket = await RetrieveBasket();
@@ -56,7 +41,10 @@ namespace API.Controllers
             // save changes 
             var result = await _context.SaveChangesAsync() > 0;
 
-            if (result) return StatusCode(201);
+            // 201 Created https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201
+            // to send back a location header of where to obtain this newly created resource.
+            // http://localhost:5000/api/Basket
+            if (result) return CreatedAtRoute("GetBasket", MapBasketToDto(basket));
 
             return BadRequest(new ProblemDetails { Title = "Problem saving item to basket" });
         }
@@ -97,15 +85,40 @@ namespace API.Controllers
             return basket;
         }
 
-
         private Basket CreateBasket()
         {
             var buyerId = Guid.NewGuid().ToString();
             var cookieOptions = new CookieOptions { IsEssential = true, Expires = DateTime.Now.AddDays(30) };
             Response.Cookies.Append("buyerId", buyerId, cookieOptions);
             var basket = new Basket { BuyerId = buyerId };
+            // entity framework will track this state.
             _context.Baskets.Add(basket);
             return basket;
+        }
+
+
+        /// <summary>
+        /// To map the Basket to BasketDto
+        /// </summary>
+        /// <param name="basket"></param>
+        /// <returns></returns>
+        private BasketDto MapBasketToDto(Basket basket)
+        {
+            return new BasketDto
+            {
+                Id = basket.Id,
+                BuyerId = basket.BuyerId,
+                Items = basket.Items.Select(item => new BasketItemDto
+                {
+                    ProductId = item.ProductId,
+                    Name = item.Product.Name,
+                    Price = item.Product.Price,
+                    PictureUrl = item.Product.PictureUrl,
+                    Type = item.Product.Type,
+                    Brand = item.Product.Brand,
+                    Quantity = item.Quantity
+                }).ToList()
+            };
         }
 
 
